@@ -33,7 +33,10 @@ import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 
 @Composable
-fun ShoppingItemCard(item: ShoppingItem) {
+fun ShoppingItemCard(
+    item: ShoppingItem,
+    onEvent: (ShoppingEvent) -> Unit = {}
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -46,7 +49,7 @@ fun ShoppingItemCard(item: ShoppingItem) {
         ) {
             Checkbox(
                 checked = item.isChecked,
-                onCheckedChange = { /* Handle checked change */ },
+                onCheckedChange = { onEvent.invoke(ShoppingEvent.CheckProduct(item)) },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary,
                     uncheckedColor = MaterialTheme.colorScheme.surfaceVariant

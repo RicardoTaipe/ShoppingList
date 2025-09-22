@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.random.Random
 
+sealed class ShoppingEvent {
+    data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
+}
+
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
     val totalPrice: Double = 0.0,
@@ -28,9 +32,31 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             ShoppingItem(Random.nextInt(), "Extra Virgin Olive Oil", 1, 12.99, false)
         )
 
-        _uiState.value = _uiState.value.copy(
-            items = dummyItems,
-            totalPrice = dummyItems.sumOf { if (!it.isChecked) it.quantity * it.unitPrice else 0.0 }
-        )
+        _uiState.update { currentState ->
+            currentState.copy(
+                items = dummyItems,
+                totalPrice = dummyItems.sumOf { it.quantity * it.unitPrice }
+            )
+        }
+    }
+
+    fun onEvent(event: ShoppingEvent) {
+        when (event) {
+            is ShoppingEvent.CheckProduct -> {
+                updateItem(event.item)
+            }
+        }
+    }
+
+    private fun updateItem(item: ShoppingItem) {
+        _uiState.update { currentState ->
+            val updatedItems = currentState.items.map {
+                if (it.id == item.id) item.copy(isChecked = !it.isChecked) else it
+            }
+            currentState.copy(
+                items = updatedItems,
+                totalPrice = updatedItems.sumOf { it.quantity * it.unitPrice }
+            )
+        }
     }
 }

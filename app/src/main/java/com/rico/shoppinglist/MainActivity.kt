@@ -18,6 +18,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.home.HomeViewModel
+import com.rico.shoppinglist.home.ShoppingEvent
 import com.rico.shoppinglist.home.ShoppingItemCard
 import com.rico.shoppinglist.home.ShoppingListUiState
 import com.rico.shoppinglist.home.components.FooterSection
@@ -45,11 +46,13 @@ fun ShoppingListScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ShoppingListScreen(uiState)
+    ShoppingListScreen(uiState){
+        viewModel.onEvent(it)
+    }
 }
 
 @Composable
-fun ShoppingListScreen(uiState: ShoppingListUiState) {
+fun ShoppingListScreen(uiState: ShoppingListUiState, onItemChecked: (ShoppingEvent) -> Unit = {}) {
     val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
     val items = uiState.items
     Scaffold(
@@ -62,7 +65,7 @@ fun ShoppingListScreen(uiState: ShoppingListUiState) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(items = items, key = { it.id }) { item ->
-                ShoppingItemCard(item = item)
+                ShoppingItemCard(item = item, onItemChecked)
             }
         }
     }
