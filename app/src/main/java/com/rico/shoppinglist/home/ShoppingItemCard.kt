@@ -200,7 +200,13 @@ private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> U
                 .widthIn(max = 100.dp)
                 .focusRequester(focusRequester),
             value = priceText,
-            onValueChange = { priceText = it },
+            onValueChange = { newValue ->
+                val sanitizedValue = newValue.replace(',', '.')
+
+                if (sanitizedValue.count { it == '.' } <= 1) {
+                    priceText = sanitizedValue
+                }
+            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
