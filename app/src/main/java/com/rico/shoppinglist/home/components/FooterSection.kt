@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,10 +31,13 @@ import com.rico.shoppinglist.R
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 
 @Composable
-fun FooterSection(formattedTotalPrice: String) {
+fun FooterSection(
+    formattedTotalPrice: String,
+    windowInsets: WindowInsets = BottomAppBarDefaults.windowInsets
+) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .windowInsetsPadding(windowInsets)
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.9f))
             .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
