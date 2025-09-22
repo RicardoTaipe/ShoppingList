@@ -9,13 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -25,7 +29,6 @@ import com.rico.shoppinglist.home.components.FooterSection
 import com.rico.shoppinglist.home.components.ShoppingTopAppbar
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 import com.rico.shoppinglist.utils.MultiThemePreview
-import kotlin.random.Random
 
 @Composable
 fun ShoppingListRoute(
@@ -37,13 +40,18 @@ fun ShoppingListRoute(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
     val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
     val items = uiState.items
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(
-        topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice, onEvent = onEvent) }) { innerPadding ->
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = { ShoppingTopAppbar(scrollBehavior) },
+        bottomBar = { FooterSection(formattedTotalPrice, onEvent = onEvent) }
+    ) { innerPadding ->
         if (items.isEmpty()) {
             EmptyListContent()
         } else {

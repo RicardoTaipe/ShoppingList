@@ -6,16 +6,11 @@ import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.data.ShoppingItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.random.Random
-import kotlin.random.nextLong
 
 sealed class ShoppingEvent {
     data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
@@ -32,8 +27,8 @@ data class ShoppingListUiState(
 )
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) : ViewModel() {
-
+class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
+    ViewModel() {
     val uiState: StateFlow<ShoppingListUiState> = repository.getAllItems()
         .map { items ->
             // Whenever the items from the database change, we create a new UI state.
@@ -41,8 +36,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                 items = items,
                 totalPrice = calculateTotalPrice(items)
             )
-        }
-        .stateIn(
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ShoppingListUiState()
@@ -55,18 +49,23 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     val updatedItem = event.item.copy(isChecked = !event.item.isChecked)
                     repository.updateItem(updatedItem)
                 }
+
                 is ShoppingEvent.DecreaseQuantity -> {
-                    val updatedItem = event.item.copy(quantity = (event.item.quantity - 1).coerceAtLeast(1))
+                    val updatedItem =
+                        event.item.copy(quantity = (event.item.quantity - 1).coerceAtLeast(1))
                     repository.updateItem(updatedItem)
                 }
+
                 is ShoppingEvent.IncreaseQuantity -> {
                     val updatedItem = event.item.copy(quantity = event.item.quantity + 1)
                     repository.updateItem(updatedItem)
                 }
+
                 is ShoppingEvent.EditPrice -> {
                     val updatedItem = event.item.copy(unitPrice = event.newPrice)
                     repository.updateItem(updatedItem)
                 }
+
                 is ShoppingEvent.AddNewItem -> {
                     val newItem = ShoppingItem(
                         name = event.productName,
@@ -76,6 +75,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     )
                     repository.insertItem(newItem)
                 }
+
                 is ShoppingEvent.Remove -> {
                     repository.deleteItem(event.item)
                 }
