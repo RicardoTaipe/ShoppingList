@@ -60,6 +60,8 @@ dependencies {
     ksp(libs.hilt.compiler)
     // hilt compose
     implementation(libs.androidx.hilt.navigation.compose)
+    // Splash Screen
+    implementation(libs.androidx.core.splashscreen)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
