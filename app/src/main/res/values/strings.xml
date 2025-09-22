@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">ShoppingList</string>
+    <string name="app_name">Listify</string>
+    <string name="shopping_list">Shopping List</string>
 </resources>
