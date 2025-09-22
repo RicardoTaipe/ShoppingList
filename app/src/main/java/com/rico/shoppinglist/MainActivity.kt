@@ -35,14 +35,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ShoppingListTheme {
-                ShoppingListScreen()
+                ShoppingListRoute()
             }
         }
     }
 }
 
 @Composable
-fun ShoppingListScreen(
+fun ShoppingListRoute(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
