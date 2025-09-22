@@ -13,7 +13,7 @@ sealed class ShoppingEvent {
     data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
     data class IncreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
-    data class EditPrice(val price: Double, val item: ShoppingItem) : ShoppingEvent()
+    data class EditPrice(val newPrice: Double, val item: ShoppingItem) : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
@@ -27,42 +27,89 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     init {
-
         val dummyItems = listOf(
             ShoppingItem(Random.nextInt(), "Milk", 2, 1.75, true),
             ShoppingItem(Random.nextInt(), "Organic Bananas", 1, 2.50, false),
             ShoppingItem(Random.nextInt(), "Whole Wheat Bread", 1, 3.20, false),
             ShoppingItem(Random.nextInt(), "Extra Virgin Olive Oil", 1, 12.99, false)
         )
-
         _uiState.update { currentState ->
-            currentState.copy(
-                items = dummyItems,
-                totalPrice = dummyItems.sumOf { it.quantity * it.unitPrice }
-            )
+            updateState(items = dummyItems)
         }
     }
 
     fun onEvent(event: ShoppingEvent) {
         when (event) {
             is ShoppingEvent.CheckProduct -> {
-                updateItem(event.item)
+                toggleItemChecked(event.item)
             }
-            is ShoppingEvent.DecreaseQuantity -> {}
-            is ShoppingEvent.IncreaseQuantity -> {}
-            is ShoppingEvent.EditPrice -> {}
+
+            is ShoppingEvent.DecreaseQuantity -> {
+                decreaseItemQuantity(event.item)
+            }
+
+            is ShoppingEvent.IncreaseQuantity -> {
+                increaseItemQuantity(event.item)
+            }
+
+            is ShoppingEvent.EditPrice -> {
+                editItemPrice(event.item, event.newPrice)
+            }
         }
     }
 
-    private fun updateItem(item: ShoppingItem) {
+    private fun toggleItemChecked(item: ShoppingItem) {
         _uiState.update { currentState ->
             val updatedItems = currentState.items.map {
-                if (it.id == item.id) item.copy(isChecked = !it.isChecked) else it
+                if (it.id == item.id) it.copy(isChecked = !it.isChecked) else it
             }
-            currentState.copy(
-                items = updatedItems,
-                totalPrice = updatedItems.sumOf { it.quantity * it.unitPrice }
-            )
+            updateState(items = updatedItems)
         }
+    }
+
+    private fun decreaseItemQuantity(item: ShoppingItem) {
+        _uiState.update { currentState ->
+            val updatedItems = currentState.items.map {
+                if (it.id == item.id) {
+                    // Decrease quantity, but ensure it's not less than 1
+                    it.copy(quantity = (it.quantity - 1).coerceAtLeast(1))
+                } else {
+                    it
+                }
+            }
+            updateState(items = updatedItems)
+        }
+    }
+
+    private fun increaseItemQuantity(item: ShoppingItem) {
+        _uiState.update { currentState ->
+            val updatedItems = currentState.items.map {
+                if (it.id == item.id) it.copy(quantity = it.quantity + 1) else it
+            }
+            updateState(items = updatedItems)
+        }
+    }
+
+    private fun editItemPrice(item: ShoppingItem, newPrice: Double) {
+        _uiState.update { currentState ->
+            val updatedItems = currentState.items.map {
+                if (it.id == item.id) it.copy(unitPrice = newPrice) else it
+            }
+            updateState(items = updatedItems)
+        }
+    }
+
+    // A private helper function to update the state safely.
+    private fun updateState(items: List<ShoppingItem>): ShoppingListUiState {
+        val newTotalPrice = calculateTotalPrice(items)
+        return ShoppingListUiState(
+            items = items,
+            totalPrice = newTotalPrice
+        )
+    }
+
+    // A private helper function to calculate the total of items.
+    private fun calculateTotalPrice(items: List<ShoppingItem>): Double {
+        return items.sumOf { it.quantity * it.unitPrice }
     }
 }
