@@ -2,5 +2,5 @@
     <string name="app_name">Listify</string>
     <string name="shopping_list">Shopping List</string>
     <string name="total">Total</string>
-    <string name="add_new_item">Add new item...</string>
+    <string name="add_product">Add a product…</string>
 </resources>

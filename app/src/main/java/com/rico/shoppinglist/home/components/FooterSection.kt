@@ -111,7 +111,7 @@ fun AddNewItemTextField(onEvent: (ShoppingEvent) -> Unit = {}) {
         },
         placeholder = {
             Text(
-                text = stringResource(R.string.add_new_item),
+                text = stringResource(R.string.add_product),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -15,6 +15,7 @@ sealed class ShoppingEvent {
     data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class EditPrice(val newPrice: Double, val item: ShoppingItem) : ShoppingEvent()
     data class AddNewItem(val productName: String) : ShoppingEvent()
+    data class Remove(val item: ShoppingItem) : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
@@ -56,8 +57,16 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             is ShoppingEvent.EditPrice -> {
                 editItemPrice(event.item, event.newPrice)
             }
+
             is ShoppingEvent.AddNewItem -> {
                 addNewItem(event.productName)
+            }
+
+            is ShoppingEvent.Remove -> {
+                _uiState.update { currentState ->
+                    val updatedItems = currentState.items.filter { it.id != event.item.id }
+                    updateState(items = updatedItems)
+                }
             }
         }
     }
