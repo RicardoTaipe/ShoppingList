@@ -74,7 +74,7 @@ fun ShoppingItemCard(
                     modifier = Modifier.alpha(if (item.isChecked) 0.5f else 1f)
                 ) {
                     IconButton(
-                        onClick = { /* Handle quantity decrease */ },
+                        onClick = { onEvent.invoke(ShoppingEvent.DecreaseQuantity(item)) },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
@@ -90,7 +90,7 @@ fun ShoppingItemCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     IconButton(
-                        onClick = { /* Handle quantity increase */ },
+                        onClick = { onEvent.invoke(ShoppingEvent.IncreaseQuantity(item)) },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(

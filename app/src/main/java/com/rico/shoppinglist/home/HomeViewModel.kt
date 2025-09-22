@@ -11,6 +11,9 @@ import kotlin.random.Random
 
 sealed class ShoppingEvent {
     data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
+    data class IncreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
+    data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
+    data class EditPrice(val price: Double, val item: ShoppingItem) : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
@@ -45,6 +48,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             is ShoppingEvent.CheckProduct -> {
                 updateItem(event.item)
             }
+            is ShoppingEvent.DecreaseQuantity -> {}
+            is ShoppingEvent.IncreaseQuantity -> {}
+            is ShoppingEvent.EditPrice -> {}
         }
     }
 
