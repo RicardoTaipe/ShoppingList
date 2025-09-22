@@ -19,6 +19,6 @@ interface ShoppingItemDao {
     @Delete
     suspend fun deleteItem(item: ShoppingItem)
 
-    @Query("SELECT * FROM shopping_items ORDER BY isChecked ASC, name ASC")
+    @Query("SELECT * FROM shopping_items ORDER BY isChecked ASC, timestamp DESC")
     fun getAllItems(): Flow<List<ShoppingItem>>
 }
