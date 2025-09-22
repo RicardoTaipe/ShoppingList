@@ -78,10 +78,25 @@ private fun ShoppingListContent(
 private fun ShoppingListScreenPreview() {
     ShoppingListTheme {
         val dummyItems = listOf(
-            ShoppingItem(Random.nextInt(), "Milk", 2, 1.75, true),
-            ShoppingItem(Random.nextInt(), "Organic Bananas", 1, 2.50, false),
-            ShoppingItem(Random.nextInt(), "Whole Wheat Bread", 1, 3.20, false),
-            ShoppingItem(Random.nextInt(), "Extra Virgin Olive Oil", 1, 12.99, false)
+            ShoppingItem(name = "Milk", quantity = 2, unitPrice = 1.75, isChecked = true),
+            ShoppingItem(
+                name = "Organic Bananas",
+                quantity = 1,
+                unitPrice = 2.50,
+                isChecked = false
+            ),
+            ShoppingItem(
+                name = "Whole Wheat Bread",
+                quantity = 1,
+                unitPrice = 3.20,
+                isChecked = false
+            ),
+            ShoppingItem(
+                name = "Extra Virgin Olive Oil",
+                quantity = 1,
+                unitPrice = 12.99,
+                isChecked = false
+            )
         )
         val totalPrice = dummyItems.sumOf { it.quantity * it.unitPrice }
         val uiState = ShoppingListUiState(

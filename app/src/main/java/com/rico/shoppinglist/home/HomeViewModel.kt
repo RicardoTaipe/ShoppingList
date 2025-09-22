@@ -1,13 +1,17 @@
 package com.rico.shoppinglist.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.rico.shoppinglist.data.ShoppingItem
+import com.rico.shoppinglist.data.ShoppingItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.random.nextLong
 
 sealed class ShoppingEvent {
     data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
@@ -24,16 +28,32 @@ data class ShoppingListUiState(
 )
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
+    ViewModel() {
     private val _uiState = MutableStateFlow(ShoppingListUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
         val dummyItems = listOf(
-            ShoppingItem(Random.nextInt(), "Milk", 2, 1.75, true),
-            ShoppingItem(Random.nextInt(), "Organic Bananas", 1, 2.50, false),
-            ShoppingItem(Random.nextInt(), "Whole Wheat Bread", 1, 3.20, false),
-            ShoppingItem(Random.nextInt(), "Extra Virgin Olive Oil", 1, 12.99, false)
+            ShoppingItem(name = "Milk", quantity = 2, unitPrice = 1.75, isChecked = true),
+            ShoppingItem(
+                name = "Organic Bananas",
+                quantity = 1,
+                unitPrice = 2.50,
+                isChecked = false
+            ),
+            ShoppingItem(
+                name = "Whole Wheat Bread",
+                quantity = 1,
+                unitPrice = 3.20,
+                isChecked = false
+            ),
+            ShoppingItem(
+                name = "Extra Virgin Olive Oil",
+                quantity = 1,
+                unitPrice = 12.99,
+                isChecked = false
+            )
         )
         _uiState.update { currentState ->
             updateState(items = dummyItems)
@@ -59,7 +79,7 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             }
 
             is ShoppingEvent.AddNewItem -> {
-                addNewItem(event.productName)
+                addItem(event.productName)
             }
 
             is ShoppingEvent.Remove -> {
@@ -67,21 +87,26 @@ class HomeViewModel @Inject constructor() : ViewModel() {
                     val updatedItems = currentState.items.filter { it.id != event.item.id }
                     updateState(items = updatedItems)
                 }
+                viewModelScope.launch {
+                    repository.deleteItem(item = event.item)
+                }
             }
         }
     }
 
-    private fun addNewItem(productName: String) {
+    private fun addItem(productName: String) {
+        val newItem = ShoppingItem(
+            name = productName,
+            quantity = 1,
+            unitPrice = 0.0,
+            isChecked = false
+        )
         _uiState.update { currentState ->
-            val newItem = ShoppingItem(
-                id = Random.nextInt(),
-                name = productName,
-                quantity = 1,
-                unitPrice = 0.0,
-                isChecked = false
-            )
             val updatedItems = currentState.items + newItem // Add the new item to the list
             updateState(items = updatedItems)
+        }
+        viewModelScope.launch {
+            repository.insertItem(newItem)
         }
     }
 

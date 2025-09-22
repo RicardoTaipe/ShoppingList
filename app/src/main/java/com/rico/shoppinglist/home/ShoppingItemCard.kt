@@ -233,7 +233,7 @@ private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> U
 fun ShoppingItemCardPreviewUnchecked() {
     ShoppingListTheme(darkTheme = false) {
         val item = ShoppingItem(
-            4,
+            "",
             "Extra Virgin Olive Oil from the Mediterranean with a hint of rosemary and garlic for added flavor",
             1,
             12.99,

@@ -2,11 +2,12 @@ package com.rico.shoppinglist.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity(tableName = "shopping_items")
 data class ShoppingItem(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey()
+    val id: String = UUID.randomUUID().toString(),
     val name: String,
     val quantity: Int,
     val unitPrice: Double,
