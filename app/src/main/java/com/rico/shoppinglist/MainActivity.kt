@@ -46,18 +46,18 @@ fun ShoppingListRoute(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ShoppingListScreen(uiState){
+    ShoppingListScreen(uiState) {
         viewModel.onEvent(it)
     }
 }
 
 @Composable
-fun ShoppingListScreen(uiState: ShoppingListUiState, onItemChecked: (ShoppingEvent) -> Unit = {}) {
+fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
     val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
     val items = uiState.items
     Scaffold(
         topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice) }
+        bottomBar = { FooterSection(formattedTotalPrice, onEvent = onEvent) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
@@ -65,7 +65,7 @@ fun ShoppingListScreen(uiState: ShoppingListUiState, onItemChecked: (ShoppingEve
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(items = items, key = { it.id }) { item ->
-                ShoppingItemCard(item = item, onItemChecked)
+                ShoppingItemCard(item = item, onEvent)
             }
         }
     }

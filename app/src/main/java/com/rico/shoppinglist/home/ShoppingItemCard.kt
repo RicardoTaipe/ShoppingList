@@ -1,5 +1,6 @@
 package com.rico.shoppinglist.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,10 +9,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -20,11 +25,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,7 +94,7 @@ fun ShoppingItemCard(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
+                            imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = "Decrease Quantity",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
@@ -94,7 +110,7 @@ fun ShoppingItemCard(
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = "Increase Quantity",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
@@ -107,22 +123,70 @@ fun ShoppingItemCard(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.Center
             ) {
-                val totalPrice = item.quantity * item.unitPrice
-                Text(
-                    text = "$%.2f".format(totalPrice),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
-                    color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                )
+                UnitPriceContainer(item, onEvent)
                 Spacer(Modifier.height(4.dp))
+                val subTotal = item.quantity * item.unitPrice
                 Text(
-                    text = "${item.quantity} x $%.2f".format(item.unitPrice),
+                    text = "$%.2f".format(subTotal),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> Unit) {
+    var isEditingPrice by remember { mutableStateOf(false) }
+    var priceText by remember { mutableStateOf(item.unitPrice.toString()) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(item.unitPrice) {
+        if (!isEditingPrice) {
+            priceText = item.unitPrice.toString()
+        }
+    }
+
+    // Request focus and open the keyboard when editing starts
+    LaunchedEffect(isEditingPrice) {
+        if (isEditingPrice) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    if (isEditingPrice) {
+        TextField(
+            modifier = Modifier
+                .wrapContentSize()
+                .widthIn(max = 100.dp)
+                .focusRequester(focusRequester),
+            value = priceText,
+            onValueChange = { priceText = it },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = {
+                val newPrice = priceText.toDouble()
+                onEvent(ShoppingEvent.EditPrice(newPrice, item))
+                isEditingPrice = false
+            }),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+            )
+        )
+    } else {
+        Text(
+            text = "$%.2f".format(item.unitPrice),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
+            color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.clickable { isEditingPrice = true }
+        )
     }
 }
 

@@ -14,11 +14,12 @@ sealed class ShoppingEvent {
     data class IncreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class EditPrice(val newPrice: Double, val item: ShoppingItem) : ShoppingEvent()
+    data class AddNewItem(val productName: String) : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
-    val totalPrice: Double = 0.0,
+    val totalPrice: Double = 0.0
 )
 
 @HiltViewModel
@@ -55,6 +56,23 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             is ShoppingEvent.EditPrice -> {
                 editItemPrice(event.item, event.newPrice)
             }
+            is ShoppingEvent.AddNewItem -> {
+                addNewItem(event.productName)
+            }
+        }
+    }
+
+    private fun addNewItem(productName: String) {
+        _uiState.update { currentState ->
+            val newItem = ShoppingItem(
+                id = Random.nextInt(),
+                name = productName,
+                quantity = 1,
+                unitPrice = 0.0,
+                isChecked = false
+            )
+            val updatedItems = currentState.items + newItem // Add the new item to the list
+            updateState(items = updatedItems)
         }
     }
 
