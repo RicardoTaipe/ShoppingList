@@ -44,9 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -177,18 +179,21 @@ fun ShoppingItemCard(
 @Composable
 private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> Unit) {
     var isEditingPrice by remember { mutableStateOf(false) }
-    var priceText by remember { mutableStateOf(item.unitPrice.toString()) }
+    var priceText by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = item.unitPrice.toString(),
+                selection = TextRange(item.unitPrice.toString().length)
+            )
+        )
+    }
     val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(item.unitPrice) {
-        if (!isEditingPrice) {
-            priceText = item.unitPrice.toString()
-        }
-    }
-
-    // Request focus and open the keyboard when editing starts
     LaunchedEffect(isEditingPrice) {
         if (isEditingPrice) {
+            priceText = priceText.copy(
+                selection = TextRange(priceText.text.length)
+            )
             focusRequester.requestFocus()
         }
     }
@@ -201,10 +206,12 @@ private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> U
                 .focusRequester(focusRequester),
             value = priceText,
             onValueChange = { newValue ->
-                val sanitizedValue = newValue.replace(',', '.')
-
-                if (sanitizedValue.count { it == '.' } <= 1) {
-                    priceText = sanitizedValue
+                val sanitized = newValue.text.replace(',', '.')
+                if (sanitized.count { it == '.' } <= 1) {
+                    priceText = newValue.copy(
+                        text = sanitized,
+                        selection = TextRange(sanitized.length)
+                    )
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -212,8 +219,9 @@ private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> U
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(onDone = {
-                val newPrice = priceText.toDouble()
+                val newPrice = priceText.text.toDoubleOrNull() ?: 0.0
                 onEvent(ShoppingEvent.EditPrice(newPrice, item))
+                focusRequester.freeFocus()
                 isEditingPrice = false
             }),
             singleLine = true,
