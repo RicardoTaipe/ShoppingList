@@ -68,7 +68,7 @@ private fun ShoppingListContent(
     onEvent: (ShoppingEvent) -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.padding(innerPadding),
+        modifier = Modifier.padding(innerPadding).fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
