@@ -1,6 +1,8 @@
 package com.rico.shoppinglist.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,17 +12,19 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -30,6 +34,7 @@ import com.rico.shoppinglist.home.components.FooterSection
 import com.rico.shoppinglist.home.components.ShoppingTopAppbar
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 import com.rico.shoppinglist.utils.MultiThemePreview
+import kotlinx.coroutines.launch
 
 @Composable
 fun ShoppingListRoute(
@@ -46,11 +51,14 @@ fun ShoppingListRoute(
 fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
     val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
     val items = uiState.items
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val focusManager = LocalFocusManager.current
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { ShoppingTopAppbar(scrollBehavior) },
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        },
+        topBar = { ShoppingTopAppbar() },
         bottomBar = { FooterSection(formattedTotalPrice, onEvent = onEvent) }
     ) { innerPadding ->
         if (items.isEmpty()) {
@@ -67,8 +75,22 @@ private fun ShoppingListContent(
     items: List<ShoppingItem>,
     onEvent: (ShoppingEvent) -> Unit
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(items.size) {
+        if (items.isNotEmpty()) {
+            coroutineScope.launch {
+                listState.animateScrollToItem(index = 0)
+            }
+        }
+    }
+
     LazyColumn(
-        modifier = Modifier.padding(innerPadding).fillMaxSize(),
+        state = listState,
+        modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

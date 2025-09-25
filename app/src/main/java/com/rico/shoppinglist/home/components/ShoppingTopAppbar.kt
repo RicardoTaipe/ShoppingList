@@ -6,8 +6,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,9 +16,8 @@ import com.rico.shoppinglist.utils.MultiThemePreview
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun ShoppingTopAppbar(scrollBehavior: TopAppBarScrollBehavior) {
+fun ShoppingTopAppbar() {
     CenterAlignedTopAppBar(
-        scrollBehavior = scrollBehavior,
         title = {
             Text(
                 stringResource(R.string.shopping_list),
@@ -41,9 +38,5 @@ fun ShoppingTopAppbar(scrollBehavior: TopAppBarScrollBehavior) {
 @MultiThemePreview
 @Composable
 private fun ShoppingTopAppbarPreview() {
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    ShoppingListTheme {
-        ShoppingTopAppbar(scrollBehavior)
-    }
+    ShoppingListTheme { ShoppingTopAppbar() }
 }

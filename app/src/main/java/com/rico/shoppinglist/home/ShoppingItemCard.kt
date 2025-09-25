@@ -179,10 +179,10 @@ fun ShoppingItemCard(
 @Composable
 private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> Unit) {
     var isEditingPrice by remember { mutableStateOf(false) }
-    var priceText by remember {
+    var priceText by remember(item.unitPrice) {
         mutableStateOf(
             TextFieldValue(
-                text = item.unitPrice.toString(),
+                text = if (item.unitPrice > 0.0) item.unitPrice.toString() else "",
                 selection = TextRange(item.unitPrice.toString().length)
             )
         )
@@ -191,15 +191,20 @@ private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> U
 
     LaunchedEffect(isEditingPrice) {
         if (isEditingPrice) {
-            priceText = priceText.copy(
-                selection = TextRange(priceText.text.length)
-            )
+            if (item.unitPrice > 0) {
+                priceText = priceText.copy(
+                    selection = TextRange(priceText.text.length)
+                )
+            }
             focusRequester.requestFocus()
         }
     }
 
     if (isEditingPrice) {
         TextField(
+            placeholder = {
+                Text(text = item.unitPrice.toString())
+            },
             modifier = Modifier
                 .wrapContentSize()
                 .widthIn(max = 100.dp)

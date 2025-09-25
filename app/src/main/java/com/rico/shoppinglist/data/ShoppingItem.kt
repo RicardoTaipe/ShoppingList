@@ -1,10 +1,12 @@
 package com.rico.shoppinglist.data
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.util.Date
 import java.util.UUID
 
+@Immutable
 @Entity(tableName = "shopping_items")
 data class ShoppingItem(
     @PrimaryKey()
