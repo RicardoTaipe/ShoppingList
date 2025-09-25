@@ -6,9 +6,10 @@ import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.data.ShoppingItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -17,30 +18,39 @@ sealed class ShoppingEvent {
     data class IncreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class EditPrice(val newPrice: Double, val item: ShoppingItem) : ShoppingEvent()
+
+    data class EditIconClicked(val item: ShoppingItem) : ShoppingEvent()
+
+    data object ModalDismissed : ShoppingEvent()
     data class AddNewItem(val productName: String) : ShoppingEvent()
     data class Remove(val item: ShoppingItem) : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
-    val totalPrice: Double = 0.0
+    val totalPrice: Double = 0.0,
+    val showBottomSheet: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
     ViewModel() {
-    val uiState: StateFlow<ShoppingListUiState> = repository.getAllItems()
-        .map { items ->
+
+    private val showBottomSheet = MutableStateFlow(false)
+    val uiState: StateFlow<ShoppingListUiState> =
+        repository.getAllItems().combine(showBottomSheet) { items, showBottomSheet ->
             // Whenever the items from the database change, we create a new UI state.
             ShoppingListUiState(
                 items = items,
-                totalPrice = calculateTotalPrice(items)
+                totalPrice = calculateTotalPrice(items),
+                showBottomSheet = showBottomSheet
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ShoppingListUiState()
         )
+
 
     fun onEvent(event: ShoppingEvent) {
         viewModelScope.launch {
@@ -79,6 +89,10 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                 is ShoppingEvent.Remove -> {
                     repository.deleteItem(event.item)
                 }
+
+                is ShoppingEvent.EditIconClicked -> showBottomSheet.value = true
+
+                ShoppingEvent.ModalDismissed -> showBottomSheet.value = false
             }
         }
     }

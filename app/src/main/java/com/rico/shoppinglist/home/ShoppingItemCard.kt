@@ -1,6 +1,5 @@
 package com.rico.shoppinglist.home
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,15 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -30,25 +26,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -151,13 +134,30 @@ fun ShoppingItemCard(
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    UnitPriceContainer(item, onEvent)
+                    Text(
+                        text = "$%.2f".format(item.unitPrice),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
+                        color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                    )
                     Spacer(Modifier.height(4.dp))
                     val subTotal = item.quantity * item.unitPrice
                     Text(
                         text = "$%.2f".format(subTotal),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(
+                    onClick = { onEvent.invoke(ShoppingEvent.EditIconClicked(item)) },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = "Increase Quantity",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
@@ -173,77 +173,6 @@ fun ShoppingItemCard(
 
         SwipeToDismissBoxValue.Settled -> {
         }
-    }
-}
-
-@Composable
-private fun UnitPriceContainer(item: ShoppingItem, onEvent: (ShoppingEvent) -> Unit) {
-    var isEditingPrice by remember { mutableStateOf(false) }
-    var priceText by remember(item.unitPrice) {
-        mutableStateOf(
-            TextFieldValue(
-                text = if (item.unitPrice > 0.0) item.unitPrice.toString() else "",
-                selection = TextRange(item.unitPrice.toString().length)
-            )
-        )
-    }
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(isEditingPrice) {
-        if (isEditingPrice) {
-            if (item.unitPrice > 0) {
-                priceText = priceText.copy(
-                    selection = TextRange(priceText.text.length)
-                )
-            }
-            focusRequester.requestFocus()
-        }
-    }
-
-    if (isEditingPrice) {
-        TextField(
-            placeholder = {
-                Text(text = item.unitPrice.toString())
-            },
-            modifier = Modifier
-                .wrapContentSize()
-                .widthIn(max = 100.dp)
-                .focusRequester(focusRequester),
-            value = priceText,
-            onValueChange = { newValue ->
-                val sanitized = newValue.text.replace(',', '.')
-                if (sanitized.count { it == '.' } <= 1) {
-                    priceText = newValue.copy(
-                        text = sanitized,
-                        selection = TextRange(sanitized.length)
-                    )
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(onDone = {
-                val newPrice = priceText.text.toDoubleOrNull() ?: 0.0
-                onEvent(ShoppingEvent.EditPrice(newPrice, item))
-                focusRequester.freeFocus()
-                isEditingPrice = false
-            }),
-            singleLine = true,
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-            )
-        )
-    } else {
-        Text(
-            text = "$%.2f".format(item.unitPrice),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            textDecoration = if (item.isChecked) TextDecoration.LineThrough else null,
-            color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.clickable { isEditingPrice = true }
-        )
     }
 }
 

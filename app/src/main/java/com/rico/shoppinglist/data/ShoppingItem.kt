@@ -16,4 +16,9 @@ data class ShoppingItem(
     val unitPrice: Double,
     val isChecked: Boolean = false,
     val timestamp: Long = Date().time
-)
+) {
+    companion object {
+        // Define a constant property that holds the "empty" instance
+        val EMPTY_ITEM = ShoppingItem(id = "", name = "", quantity = 1, unitPrice = 0.0)
+    }
+}

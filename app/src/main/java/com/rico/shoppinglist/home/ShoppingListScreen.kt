@@ -1,8 +1,6 @@
 package com.rico.shoppinglist.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,12 +25,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rico.shoppinglist.addoredit.AddEditBottomSheet
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.home.components.FooterSection
 import com.rico.shoppinglist.home.components.ShoppingTopAppbar
@@ -51,24 +52,37 @@ fun ShoppingListRoute(
 fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
     val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
     val items = uiState.items
-    val focusManager = LocalFocusManager.current
+
     Scaffold(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = {
-                focusManager.clearFocus()
-            })
+        floatingActionButton = {
+            AddProductButton(onEvent)
         },
         topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice, onEvent = onEvent) }
+        bottomBar = { FooterSection(formattedTotalPrice) }
     ) { innerPadding ->
         if (items.isEmpty()) {
             EmptyListContent()
         } else {
             ShoppingListContent(innerPadding, items, onEvent)
         }
+        AddEditBottomSheet(showBottomSheet = uiState.showBottomSheet) {
+            onEvent.invoke(ShoppingEvent.ModalDismissed)
+        }
     }
 }
 
+@Composable
+private fun AddProductButton(onEvent: (ShoppingEvent) -> Unit) {
+    FloatingActionButton(
+        containerColor = MaterialTheme.colorScheme.primary,
+        onClick = {
+            onEvent.invoke(ShoppingEvent.EditIconClicked(ShoppingItem.EMPTY_ITEM))
+        }) {
+        Icon(Icons.Filled.Add, contentDescription = "")
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShoppingListContent(
     innerPadding: PaddingValues,
@@ -77,7 +91,6 @@ private fun ShoppingListContent(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-
     LaunchedEffect(items.size) {
         if (items.isNotEmpty()) {
             coroutineScope.launch {
