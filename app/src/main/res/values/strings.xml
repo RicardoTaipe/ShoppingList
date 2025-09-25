@@ -3,4 +3,5 @@
     <string name="shopping_list">Shopping List</string>
     <string name="total">Total</string>
     <string name="add_product">Add a product…</string>
+    <string name="price_format">$%.2f</string>
 </resources>

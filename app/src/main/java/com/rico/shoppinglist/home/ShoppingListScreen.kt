@@ -25,10 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rico.shoppinglist.R
 import com.rico.shoppinglist.addoredit.AddEditBottomSheet
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.home.components.FooterSection
@@ -50,7 +52,7 @@ fun ShoppingListRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
-    val formattedTotalPrice = "$%.2f".format(uiState.totalPrice)
+    val formattedTotalPrice = stringResource(R.string.price_format, uiState.totalPrice)
     val items = uiState.items
 
     Scaffold(
@@ -58,7 +60,7 @@ fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) ->
             AddProductButton(onEvent)
         },
         topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice) }
+        bottomBar = { FooterSection(formattedTotalPrice = formattedTotalPrice) }
     ) { innerPadding ->
         if (items.isEmpty()) {
             EmptyListContent()

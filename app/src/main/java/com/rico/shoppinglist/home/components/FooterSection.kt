@@ -2,22 +2,20 @@ package com.rico.shoppinglist.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,28 +25,28 @@ import com.rico.shoppinglist.utils.MultiThemePreview
 
 @Composable
 fun FooterSection(
+    modifier: Modifier = Modifier,
     formattedTotalPrice: String,
     windowInsets: WindowInsets = BottomAppBarDefaults.windowInsets,
 ) {
-    Column(
-        modifier = Modifier
+    Surface(
+        shadowElevation = 8.dp,
+        modifier = modifier
             .windowInsetsPadding(windowInsets)
             .imePadding()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.9f))
-            .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .shadow(elevation = 8.dp)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
         TotalPriceContainer(formattedTotalPrice)
     }
 }
 
 @Composable
 private fun TotalPriceContainer(formattedTotalPrice: String) {
-    Spacer(Modifier.height(16.dp))
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -71,6 +69,6 @@ private fun TotalPriceContainer(formattedTotalPrice: String) {
 @Composable
 private fun FooterSectionPreview() {
     ShoppingListTheme {
-        FooterSection("$123.45")
+        FooterSection(formattedTotalPrice = "$123.45")
     }
 }
