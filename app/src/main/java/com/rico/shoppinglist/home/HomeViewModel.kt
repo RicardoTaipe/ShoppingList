@@ -17,7 +17,8 @@ sealed class ShoppingEvent {
     data class CheckProduct(val item: ShoppingItem) : ShoppingEvent()
     data class IncreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
     data class DecreaseQuantity(val item: ShoppingItem) : ShoppingEvent()
-    data class EditPrice(val newPrice: Double, val item: ShoppingItem) : ShoppingEvent()
+    data class EditProduct(val newPrice: String, val newName: String, val item: ShoppingItem) :
+        ShoppingEvent()
 
     data class EditIconClicked(val item: ShoppingItem) : ShoppingEvent()
 
@@ -29,21 +30,27 @@ sealed class ShoppingEvent {
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
     val totalPrice: Double = 0.0,
-    val showBottomSheet: Boolean = false
+    val showBottomSheet: Boolean = false,
+    val selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
     ViewModel() {
 
+    private val selectedProduct = MutableStateFlow(ShoppingItem.PLACEHOLDER)
     private val showBottomSheet = MutableStateFlow(false)
     val uiState: StateFlow<ShoppingListUiState> =
-        repository.getAllItems().combine(showBottomSheet) { items, showBottomSheet ->
-            // Whenever the items from the database change, we create a new UI state.
+        combine(
+            repository.getAllItems(),
+            showBottomSheet,
+            selectedProduct
+        ) { items, showBottomSheet, selectedProduct ->
             ShoppingListUiState(
                 items = items,
                 totalPrice = calculateTotalPrice(items),
-                showBottomSheet = showBottomSheet
+                showBottomSheet = showBottomSheet,
+                selectedProduct = selectedProduct
             )
         }.stateIn(
             scope = viewModelScope,
@@ -71,9 +78,12 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     repository.updateItem(updatedItem)
                 }
 
-                is ShoppingEvent.EditPrice -> {
-                    val updatedItem = event.item.copy(unitPrice = event.newPrice)
+                is ShoppingEvent.EditProduct -> {
+                    val newPrice =
+                        event.newPrice.takeIf { it.isNotEmpty() }?.toDouble() ?: 0.0
+                    val updatedItem = event.item.copy(unitPrice = newPrice, name = event.newName)
                     repository.updateItem(updatedItem)
+                    showBottomSheet.value = false
                 }
 
                 is ShoppingEvent.AddNewItem -> {
@@ -83,6 +93,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                         unitPrice = 0.0,
                         isChecked = false
                     )
+                    showBottomSheet.value = false
                     repository.insertItem(newItem)
                 }
 
@@ -90,14 +101,16 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     repository.deleteItem(event.item)
                 }
 
-                is ShoppingEvent.EditIconClicked -> showBottomSheet.value = true
+                is ShoppingEvent.EditIconClicked -> {
+                    selectedProduct.value = event.item
+                    showBottomSheet.value = true
+                }
 
                 ShoppingEvent.ModalDismissed -> showBottomSheet.value = false
             }
         }
     }
 
-    // A private helper function to calculate the total
     private fun calculateTotalPrice(items: List<ShoppingItem>): Double {
         return items.sumOf { it.quantity * it.unitPrice }
     }

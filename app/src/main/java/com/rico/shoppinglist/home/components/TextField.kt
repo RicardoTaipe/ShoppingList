@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
@@ -28,9 +29,9 @@ fun TextField(
     label: String = "",
     value: String = "",
     prefix: String = "",
+    isNumber: Boolean = false,
     placeholder: String = "",
     onValueChange: (String) -> Unit = {},
-    onDone: () -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -70,10 +71,10 @@ fun TextField(
             cursorColor = MaterialTheme.colorScheme.primary
         ),
         keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
+            keyboardType = if (isNumber) KeyboardType.Decimal else KeyboardType.Unspecified
         ),
         keyboardActions = KeyboardActions(onDone = {
-            onDone.invoke()
             keyboardController?.hide()
             focusManager.clearFocus()
         }),

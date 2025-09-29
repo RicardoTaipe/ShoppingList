@@ -67,7 +67,11 @@ fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) ->
         } else {
             ShoppingListContent(innerPadding, items, onEvent)
         }
-        AddEditBottomSheet(showBottomSheet = uiState.showBottomSheet, onEvent = onEvent)
+        AddEditBottomSheet(
+            showBottomSheet = uiState.showBottomSheet,
+            selectedProduct = uiState.selectedProduct,
+            onEvent = onEvent
+        )
     }
 }
 
@@ -76,7 +80,7 @@ private fun AddProductButton(onEvent: (ShoppingEvent) -> Unit) {
     FloatingActionButton(
         containerColor = MaterialTheme.colorScheme.primary,
         onClick = {
-            onEvent.invoke(ShoppingEvent.EditIconClicked(ShoppingItem.EMPTY_ITEM))
+            onEvent.invoke(ShoppingEvent.EditIconClicked(ShoppingItem.PLACEHOLDER))
         }) {
         Icon(Icons.Filled.Add, contentDescription = "")
     }

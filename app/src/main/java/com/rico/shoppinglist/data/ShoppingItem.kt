@@ -19,6 +19,15 @@ data class ShoppingItem(
 ) {
     companion object {
         // Define a constant property that holds the "empty" instance
-        val EMPTY_ITEM = ShoppingItem(id = "", name = "", quantity = 1, unitPrice = 0.0)
+        val PLACEHOLDER = ShoppingItem(
+            id = "",
+            name = "",
+            quantity = 0,
+            unitPrice = 0.0,
+            isChecked = false,
+            timestamp = 0L
+        )
     }
+    fun isExistingProduct() = this.id.isNotEmpty()
+
 }
