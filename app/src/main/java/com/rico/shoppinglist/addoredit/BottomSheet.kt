@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +45,9 @@ fun AddEditBottomSheet(
     if (!showBottomSheet) return
     ModalBottomSheet(
         containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = { BottomSheetDefaults.DragHandle(
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) },
         onDismissRequest = { onEvent.invoke(ShoppingEvent.ModalDismissed) },
         sheetState = sheetState
     ) {

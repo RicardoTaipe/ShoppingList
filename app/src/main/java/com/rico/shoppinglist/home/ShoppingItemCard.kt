@@ -1,5 +1,6 @@
 package com.rico.shoppinglist.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,11 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -31,11 +32,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rico.shoppinglist.R
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 
@@ -102,10 +105,15 @@ fun ShoppingItemCard(
                     ) {
                         IconButton(
                             onClick = { onEvent.invoke(ShoppingEvent.DecreaseQuantity(item)) },
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier
+                                .background(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
+                                painter = painterResource(R.drawable.remove_24px),
                                 contentDescription = "Decrease Quantity",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
@@ -118,10 +126,15 @@ fun ShoppingItemCard(
                         )
                         IconButton(
                             onClick = { onEvent.invoke(ShoppingEvent.IncreaseQuantity(item)) },
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier
+                                .background(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowUp,
+                                imageVector = Icons.Default.Add,
                                 contentDescription = "Increase Quantity",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
