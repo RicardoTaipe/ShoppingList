@@ -67,9 +67,7 @@ fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) ->
         } else {
             ShoppingListContent(innerPadding, items, onEvent)
         }
-        AddEditBottomSheet(showBottomSheet = uiState.showBottomSheet) {
-            onEvent.invoke(ShoppingEvent.ModalDismissed)
-        }
+        AddEditBottomSheet(showBottomSheet = uiState.showBottomSheet, onEvent = onEvent)
     }
 }
 
