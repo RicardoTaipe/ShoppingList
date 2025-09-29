@@ -18,10 +18,15 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,27 +56,60 @@ fun ShoppingListRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingListScreen(uiState: ShoppingListUiState, onEvent: (ShoppingEvent) -> Unit = {}) {
+private fun ShoppingListScreen(
+    uiState: ShoppingListUiState,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    onEvent: (ShoppingEvent) -> Unit = {}
+) {
     val formattedTotalPrice = stringResource(R.string.price_format, uiState.totalPrice)
-    val items = uiState.items
+
+    HandleSnackbarMessages(uiState, snackbarHostState, onEvent)
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         floatingActionButton = {
             AddProductButton(onEvent)
         },
         topBar = { ShoppingTopAppbar() },
         bottomBar = { FooterSection(formattedTotalPrice = formattedTotalPrice) }
     ) { innerPadding ->
-        if (items.isEmpty()) {
+        if (uiState.items.isEmpty()) {
             EmptyListContent()
         } else {
-            ShoppingListContent(innerPadding, items, onEvent)
+            ShoppingListContent(innerPadding, uiState.items, onEvent)
         }
         AddEditBottomSheet(
             showBottomSheet = uiState.showBottomSheet,
             selectedProduct = uiState.selectedProduct,
             onEvent = onEvent
         )
+    }
+}
+@Composable
+private fun HandleSnackbarMessages(
+    uiState: ShoppingListUiState,
+    snackbarHostState: SnackbarHostState,
+    onEvent: (ShoppingEvent) -> Unit
+) {
+    val actionLabel = stringResource(R.string.undo_action)
+
+    uiState.userMessage?.let { messageResId ->
+        val snackbarText = stringResource(messageResId)
+
+        LaunchedEffect(snackbarHostState, messageResId) {
+            val result = snackbarHostState.showSnackbar(
+                message = snackbarText,
+                actionLabel = actionLabel,
+                duration = SnackbarDuration.Long
+            )
+
+            when (result) {
+                SnackbarResult.ActionPerformed -> onEvent(ShoppingEvent.UndoDelete)
+                SnackbarResult.Dismissed -> onEvent(ShoppingEvent.SnackbarDismissed)
+            }
+        }
     }
 }
 
@@ -86,7 +124,6 @@ private fun AddProductButton(onEvent: (ShoppingEvent) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShoppingListContent(
     innerPadding: PaddingValues,
@@ -184,6 +221,8 @@ private fun EmptyListContent() {
 @Composable
 private fun EmptyListContentPreview() {
     ShoppingListTheme {
-        ShoppingListScreen(ShoppingListUiState())
+        ShoppingListScreen(
+            ShoppingListUiState()
+        )
     }
 }

@@ -30,4 +30,10 @@ data class ShoppingItem(
     }
     fun isExistingProduct() = this.id.isNotEmpty()
 
+    fun copyWithoutId(): ShoppingItem {
+        // We call copy() and explicitly set the 'id' to its default value.
+        // The default value is UUID.randomUUID().toString().
+        return this.copy(id = UUID.randomUUID().toString())
+    }
+
 }

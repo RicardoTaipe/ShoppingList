@@ -2,6 +2,7 @@ package com.rico.shoppinglist.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rico.shoppinglist.R
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.data.ShoppingItemRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,32 +26,41 @@ sealed class ShoppingEvent {
     data object ModalDismissed : ShoppingEvent()
     data class AddNewItem(val productName: String) : ShoppingEvent()
     data class Remove(val item: ShoppingItem) : ShoppingEvent()
+
+    data object UndoDelete : ShoppingEvent()
+    data object SnackbarDismissed : ShoppingEvent()
 }
 
 data class ShoppingListUiState(
     val items: List<ShoppingItem> = emptyList(),
     val totalPrice: Double = 0.0,
     val showBottomSheet: Boolean = false,
-    val selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER
+    val selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER,
+    val userMessage: Int? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
     ViewModel() {
+    private var recentlyDeletedItem: ShoppingItem? = null
 
+    private val _userMessage: MutableStateFlow<Int?> = MutableStateFlow(null)
     private val selectedProduct = MutableStateFlow(ShoppingItem.PLACEHOLDER)
     private val showBottomSheet = MutableStateFlow(false)
+
     val uiState: StateFlow<ShoppingListUiState> =
         combine(
             repository.getAllItems(),
             showBottomSheet,
-            selectedProduct
-        ) { items, showBottomSheet, selectedProduct ->
+            selectedProduct,
+            _userMessage
+        ) { items, showBottomSheet, selectedProduct, userMessage ->
             ShoppingListUiState(
                 items = items,
                 totalPrice = calculateTotalPrice(items),
                 showBottomSheet = showBottomSheet,
-                selectedProduct = selectedProduct
+                selectedProduct = selectedProduct,
+                userMessage = userMessage
             )
         }.stateIn(
             scope = viewModelScope,
@@ -98,7 +108,17 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                 }
 
                 is ShoppingEvent.Remove -> {
+                    recentlyDeletedItem = event.item
                     repository.deleteItem(event.item)
+                    _userMessage.value = R.string.undo_message
+                }
+
+                ShoppingEvent.UndoDelete -> {
+                    recentlyDeletedItem?.let { item ->
+                        repository.insertItem(item.copyWithoutId())
+                    }
+                    recentlyDeletedItem = null
+                    snackbarMessageShown()
                 }
 
                 is ShoppingEvent.EditIconClicked -> {
@@ -107,8 +127,15 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                 }
 
                 ShoppingEvent.ModalDismissed -> showBottomSheet.value = false
+                ShoppingEvent.SnackbarDismissed -> {
+                    snackbarMessageShown()
+                }
             }
         }
+    }
+
+    private fun snackbarMessageShown() {
+        _userMessage.value = null
     }
 
     private fun calculateTotalPrice(items: List<ShoppingItem>): Double {

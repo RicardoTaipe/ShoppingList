@@ -1,6 +1,5 @@
 package com.rico.shoppinglist.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +19,9 @@ private val LightColorScheme = lightColorScheme(
     onSurface = light_onSurface,
     surfaceVariant = light_surfaceVariant,
     onSurfaceVariant = light_onSurfaceVariant,
-    outline = light_outline
+    outline = light_outline,
+    inverseSurface = dark_background,
+    inversePrimary = light_primary
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -32,7 +33,9 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = dark_onSurface,
     surfaceVariant = dark_surfaceVariant,
     onSurfaceVariant = dark_onSurfaceVariant,
-    outline = dark_outline
+    outline = dark_outline,
+    inverseSurface = light_background,
+    inversePrimary = dark_onPrimary
 )
 
 @Composable

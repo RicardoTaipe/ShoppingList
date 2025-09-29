@@ -138,7 +138,7 @@ fun AddEditBottomSheet(
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp) // Match rounded-lg
+                    shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(stringResource(R.string.save), fontWeight = FontWeight.Bold)
                 }
