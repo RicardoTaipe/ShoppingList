@@ -127,7 +127,8 @@ fun AddEditBottomSheet(
                         } else {
                             onEvent.invoke(
                                 ShoppingEvent.AddNewItem(
-                                    productName = name
+                                    productName = name,
+                                    price = unitPrice.replace(",", ".")
                                 )
                             )
                         }
@@ -162,7 +163,7 @@ private fun AddEditBottomSheetPreview() {
             id = "1",
             name = "Milk",
             quantity = 1,
-            unitPrice = 0.0,
+            unitPrice = 0.95,
             isChecked = false
         )
         AddEditBottomSheet(sheetState = sheetState, selectedProduct = selectedProduct)

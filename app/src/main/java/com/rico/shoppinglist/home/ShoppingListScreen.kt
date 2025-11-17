@@ -132,7 +132,7 @@ private fun ShoppingListContent(
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(items.size) {
+    LaunchedEffect(items.size, listState) {
         if (items.isNotEmpty()) {
             coroutineScope.launch {
                 listState.animateScrollToItem(index = 0)

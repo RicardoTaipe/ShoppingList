@@ -1,5 +1,6 @@
 package com.rico.shoppinglist.home
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rico.shoppinglist.R
@@ -24,7 +25,7 @@ sealed class ShoppingEvent {
     data class EditIconClicked(val item: ShoppingItem) : ShoppingEvent()
 
     data object ModalDismissed : ShoppingEvent()
-    data class AddNewItem(val productName: String) : ShoppingEvent()
+    data class AddNewItem(val productName: String, val price: String) : ShoppingEvent()
     data class Remove(val item: ShoppingItem) : ShoppingEvent()
 
     data object UndoDelete : ShoppingEvent()
@@ -69,6 +70,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
         )
 
 
+    @SuppressLint("DefaultLocale")
     fun onEvent(event: ShoppingEvent) {
         viewModelScope.launch {
             when (event) {
@@ -100,7 +102,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     val newItem = ShoppingItem(
                         name = event.productName,
                         quantity = 1,
-                        unitPrice = 0.0,
+                        unitPrice = event.price.toDouble().let { String.format("%.2f", it).toDouble() },
                         isChecked = false
                     )
                     showBottomSheet.value = false
