@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -30,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -67,14 +66,13 @@ private fun ShoppingListScreen(
 
     Scaffold(
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
+        SnackbarHost(hostState = snackbarHostState)
+    },
         floatingActionButton = {
             AddProductButton(onEvent)
         },
         topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice = formattedTotalPrice) }
-    ) { innerPadding ->
+        bottomBar = { FooterSection(formattedTotalPrice = formattedTotalPrice) }) { innerPadding ->
         if (uiState.items.isEmpty()) {
             EmptyListContent()
         } else {
@@ -87,6 +85,7 @@ private fun ShoppingListScreen(
         )
     }
 }
+
 @Composable
 private fun HandleSnackbarMessages(
     uiState: ShoppingListUiState,
@@ -100,9 +99,7 @@ private fun HandleSnackbarMessages(
 
         LaunchedEffect(snackbarHostState, messageResId) {
             val result = snackbarHostState.showSnackbar(
-                message = snackbarText,
-                actionLabel = actionLabel,
-                duration = SnackbarDuration.Long
+                message = snackbarText, actionLabel = actionLabel, duration = SnackbarDuration.Long
             )
 
             when (result) {
@@ -116,19 +113,16 @@ private fun HandleSnackbarMessages(
 @Composable
 private fun AddProductButton(onEvent: (ShoppingEvent) -> Unit) {
     FloatingActionButton(
-        containerColor = MaterialTheme.colorScheme.primary,
-        onClick = {
+        containerColor = MaterialTheme.colorScheme.primary, onClick = {
             onEvent.invoke(ShoppingEvent.EditIconClicked(ShoppingItem.PLACEHOLDER))
         }) {
-        Icon(Icons.Filled.Add, contentDescription = "")
+        Icon(painter = painterResource(R.drawable.add), contentDescription = "")
     }
 }
 
 @Composable
 private fun ShoppingListContent(
-    innerPadding: PaddingValues,
-    items: List<ShoppingItem>,
-    onEvent: (ShoppingEvent) -> Unit
+    innerPadding: PaddingValues, items: List<ShoppingItem>, onEvent: (ShoppingEvent) -> Unit
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -150,9 +144,7 @@ private fun ShoppingListContent(
     ) {
         items(items = items, key = { it.id }) { item ->
             ShoppingItemCard(
-                item = item,
-                modifier = Modifier.animateItem(),
-                onEvent = onEvent
+                item = item, modifier = Modifier.animateItem(), onEvent = onEvent
             )
         }
     }
@@ -165,22 +157,13 @@ private fun ShoppingListScreenPreview() {
         val dummyItems = listOf(
             ShoppingItem(name = "Milk", quantity = 2, unitPrice = 1.75, isChecked = true),
             ShoppingItem(
-                name = "Organic Bananas",
-                quantity = 1,
-                unitPrice = 2.50,
-                isChecked = false
+                name = "Organic Bananas", quantity = 1, unitPrice = 2.50, isChecked = false
             ),
             ShoppingItem(
-                name = "Whole Wheat Bread",
-                quantity = 1,
-                unitPrice = 3.20,
-                isChecked = false
+                name = "Whole Wheat Bread", quantity = 1, unitPrice = 3.20, isChecked = false
             ),
             ShoppingItem(
-                name = "Extra Virgin Olive Oil",
-                quantity = 1,
-                unitPrice = 12.99,
-                isChecked = false
+                name = "Extra Virgin Olive Oil", quantity = 1, unitPrice = 12.99, isChecked = false
             )
         )
         val totalPrice = dummyItems.sumOf { it.quantity * it.unitPrice }
@@ -197,8 +180,7 @@ private fun EmptyListContent() {
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+            .background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
@@ -226,3 +208,4 @@ private fun EmptyListContentPreview() {
         )
     }
 }
+

@@ -72,7 +72,7 @@ fun TextField(
         ),
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Done,
-            keyboardType = if (isNumber) KeyboardType.Decimal else KeyboardType.Unspecified
+            keyboardType = if (isNumber) KeyboardType.Number else KeyboardType.Unspecified
         ),
         keyboardActions = KeyboardActions(onDone = {
             keyboardController?.hide()
