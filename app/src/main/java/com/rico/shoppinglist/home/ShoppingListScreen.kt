@@ -184,13 +184,13 @@ private fun EmptyListContent() {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "Your shopping list is empty.",
+                text = stringResource(R.string.your_shopping_list_is_empty),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "Start adding items to your list!",
+                text = stringResource(R.string.start_adding_items_to_your_list),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
