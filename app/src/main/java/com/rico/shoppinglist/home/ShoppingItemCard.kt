@@ -20,6 +20,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -37,6 +38,7 @@ import com.rico.shoppinglist.R
 import com.rico.shoppinglist.data.ShoppingItem
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 import com.rico.shoppinglist.utils.MultiThemePreview
+import com.rico.shoppinglist.utils.shimmer
 
 @Composable
 fun ShoppingItemCard(
@@ -163,7 +165,7 @@ fun ShoppingItemCard(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.edit) ,
+                        painter = painterResource(R.drawable.edit),
                         contentDescription = "Increase Quantity",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
@@ -185,6 +187,18 @@ fun ShoppingItemCard(
     }
 }
 
+@Composable
+fun LoadingCard(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .shimmer(12.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ){}
+}
+
 @MultiThemePreview
 @Composable
 fun ShoppingItemCardPreviewUnchecked() {
@@ -198,4 +212,10 @@ fun ShoppingItemCardPreviewUnchecked() {
         )
         ShoppingItemCard(item)
     }
+}
+
+@MultiThemePreview
+@Composable
+private fun LoadingCardPreview() {
+    LoadingCard()
 }

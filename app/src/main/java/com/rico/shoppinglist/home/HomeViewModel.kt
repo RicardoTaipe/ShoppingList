@@ -32,13 +32,18 @@ sealed class ShoppingEvent {
     data object SnackbarDismissed : ShoppingEvent()
 }
 
-data class ShoppingListUiState(
-    val items: List<ShoppingItem> = emptyList(),
-    val totalPrice: Double = 0.0,
-    val showBottomSheet: Boolean = false,
-    val selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER,
-    val userMessage: Int? = null
-)
+sealed class ShoppingListUiState {
+    data class Success(
+        val items: List<ShoppingItem> = emptyList(),
+        val totalPrice: Double = 0.0,
+        val showBottomSheet: Boolean = false,
+        val selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER,
+        val userMessage: Int? = null
+    ): ShoppingListUiState()
+
+    data object Loading : ShoppingListUiState()
+}
+
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepository) :
@@ -56,7 +61,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
             selectedProduct,
             _userMessage
         ) { items, showBottomSheet, selectedProduct, userMessage ->
-            ShoppingListUiState(
+            ShoppingListUiState.Success(
                 items = items,
                 totalPrice = calculateTotalPrice(items),
                 showBottomSheet = showBottomSheet,
@@ -66,7 +71,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ShoppingListUiState()
+            initialValue = ShoppingListUiState.Loading
         )
 
 
@@ -102,7 +107,8 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     val newItem = ShoppingItem(
                         name = event.productName,
                         quantity = 1,
-                        unitPrice = event.price.toDouble().let { String.format("%.2f", it).toDouble() },
+                        unitPrice = event.price.toDouble()
+                            .let { String.format("%.2f", it).toDouble() },
                         isChecked = false
                     )
                     showBottomSheet.value = false

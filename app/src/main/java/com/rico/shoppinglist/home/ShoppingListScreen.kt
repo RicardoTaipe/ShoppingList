@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -60,35 +61,50 @@ private fun ShoppingListScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onEvent: (ShoppingEvent) -> Unit = {}
 ) {
-    val formattedTotalPrice = stringResource(R.string.price_format, uiState.totalPrice)
-
-    HandleSnackbarMessages(uiState, snackbarHostState, onEvent)
+    if (uiState is ShoppingListUiState.Success) {
+        HandleSnackbarMessages(uiState, snackbarHostState, onEvent)
+    }
 
     Scaffold(
         snackbarHost = {
-        SnackbarHost(hostState = snackbarHostState)
-    },
+            SnackbarHost(hostState = snackbarHostState)
+        },
         floatingActionButton = {
             AddProductButton(onEvent)
         },
         topBar = { ShoppingTopAppbar() },
-        bottomBar = { FooterSection(formattedTotalPrice = formattedTotalPrice) }) { innerPadding ->
-        if (uiState.items.isEmpty()) {
-            EmptyListContent()
-        } else {
-            ShoppingListContent(innerPadding, uiState.items, onEvent)
+        bottomBar = {
+            if (uiState is ShoppingListUiState.Success) {
+                FooterSection(
+                    formattedTotalPrice = stringResource(
+                        R.string.price_format,
+                        uiState.totalPrice
+                    )
+                )
+            }
         }
-        AddEditBottomSheet(
-            showBottomSheet = uiState.showBottomSheet,
-            selectedProduct = uiState.selectedProduct,
-            onEvent = onEvent
-        )
+    ) { innerPadding ->
+        when (uiState) {
+            is ShoppingListUiState.Loading -> LoadingContent()
+            is ShoppingListUiState.Success -> {
+                if (uiState.items.isEmpty()) {
+                    EmptyListContent(modifier = Modifier.padding(innerPadding))
+                } else {
+                    ShoppingListContent(innerPadding, uiState.items, onEvent)
+                }
+                AddEditBottomSheet(
+                    showBottomSheet = uiState.showBottomSheet,
+                    selectedProduct = uiState.selectedProduct,
+                    onEvent = onEvent
+                )
+            }
+        }
     }
 }
 
 @Composable
 private fun HandleSnackbarMessages(
-    uiState: ShoppingListUiState,
+    uiState: ShoppingListUiState.Success,
     snackbarHostState: SnackbarHostState,
     onEvent: (ShoppingEvent) -> Unit
 ) {
@@ -150,6 +166,23 @@ private fun ShoppingListContent(
     }
 }
 
+@Composable
+fun LoadingContent(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        repeat(4) {
+            LoadingCard()
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun LoadingContentPreview() {
+    ShoppingListTheme {
+        LoadingContent()
+    }
+}
+
 @MultiThemePreview
 @Composable
 private fun ShoppingListScreenPreview() {
@@ -167,7 +200,7 @@ private fun ShoppingListScreenPreview() {
             )
         )
         val totalPrice = dummyItems.sumOf { it.quantity * it.unitPrice }
-        val uiState = ShoppingListUiState(
+        val uiState = ShoppingListUiState.Success(
             items = dummyItems, totalPrice = totalPrice
         )
         ShoppingListScreen(uiState)
@@ -175,9 +208,9 @@ private fun ShoppingListScreenPreview() {
 }
 
 @Composable
-private fun EmptyListContent() {
+private fun EmptyListContent(modifier: Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .imePadding()
             .background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center
@@ -204,7 +237,7 @@ private fun EmptyListContent() {
 private fun EmptyListContentPreview() {
     ShoppingListTheme {
         ShoppingListScreen(
-            ShoppingListUiState()
+            ShoppingListUiState.Success()
         )
     }
 }
