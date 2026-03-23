@@ -77,22 +77,26 @@ fun AddEditBottomSheet(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TextField(
-                label = stringResource(R.string.product_name),
-                value = name,
-                onValueChange = { name = it },
-                placeholder = stringResource(R.string.e_g_milk)
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                TextField(
+                    modifier = Modifier.weight(2f),
+                    label = stringResource(R.string.product_name),
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = stringResource(R.string.e_g_milk)
+                )
 
 
-            TextField(
-                isNumber = true,
-                label = stringResource(R.string.price),
-                value = unitPrice,
-                prefix = stringResource(R.string.dollar_sign),
-                onValueChange = { unitPrice = it },
-                placeholder = stringResource(R.string.price_number)
-            )
+                TextField(
+                    modifier = Modifier.weight(1f),
+                    isNumber = true,
+                    label = stringResource(R.string.price),
+                    value = unitPrice,
+                    prefix = stringResource(R.string.dollar_sign),
+                    onValueChange = { unitPrice = it },
+                    placeholder = stringResource(R.string.price_number)
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

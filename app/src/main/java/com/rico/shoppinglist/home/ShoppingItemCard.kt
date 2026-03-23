@@ -217,5 +217,5 @@ fun ShoppingItemCardPreviewUnchecked() {
 @MultiThemePreview
 @Composable
 private fun LoadingCardPreview() {
-    LoadingCard()
+    LoadingCard(modifier = Modifier.padding(16.dp))
 }

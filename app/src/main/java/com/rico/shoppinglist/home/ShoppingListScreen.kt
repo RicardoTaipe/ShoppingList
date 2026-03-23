@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,16 +41,13 @@ import com.rico.shoppinglist.home.components.FooterSection
 import com.rico.shoppinglist.home.components.ShoppingTopAppbar
 import com.rico.shoppinglist.ui.theme.ShoppingListTheme
 import com.rico.shoppinglist.utils.MultiThemePreview
-import kotlinx.coroutines.launch
 
 @Composable
 fun ShoppingListRoute(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ShoppingListScreen(uiState) {
-        viewModel.onEvent(it)
-    }
+    ShoppingListScreen(uiState, onEvent = viewModel::onEvent)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,24 +62,18 @@ private fun ShoppingListScreen(
     }
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-        floatingActionButton = {
-            AddProductButton(onEvent)
-        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = { AddProductButton(onEvent) },
         topBar = { ShoppingTopAppbar() },
         bottomBar = {
             if (uiState is ShoppingListUiState.Success) {
                 FooterSection(
                     formattedTotalPrice = stringResource(
-                        R.string.price_format,
-                        uiState.totalPrice
+                        R.string.price_format, uiState.totalPrice
                     )
                 )
             }
-        }
-    ) { innerPadding ->
+        }) { innerPadding ->
         when (uiState) {
             is ShoppingListUiState.Loading -> LoadingContent()
             is ShoppingListUiState.Success -> {
@@ -113,7 +103,7 @@ private fun HandleSnackbarMessages(
     uiState.userMessage?.let { messageResId ->
         val snackbarText = stringResource(messageResId)
 
-        LaunchedEffect(snackbarHostState, messageResId) {
+        LaunchedEffect(messageResId) {
             val result = snackbarHostState.showSnackbar(
                 message = snackbarText, actionLabel = actionLabel, duration = SnackbarDuration.Long
             )
@@ -141,12 +131,9 @@ private fun ShoppingListContent(
     innerPadding: PaddingValues, items: List<ShoppingItem>, onEvent: (ShoppingEvent) -> Unit
 ) {
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    LaunchedEffect(items.size, listState) {
+    LaunchedEffect(items.size) {
         if (items.isNotEmpty()) {
-            coroutineScope.launch {
-                listState.animateScrollToItem(index = 0)
-            }
+            listState.animateScrollToItem(index = 0)
         }
     }
 
@@ -241,4 +228,3 @@ private fun EmptyListContentPreview() {
         )
     }
 }
-

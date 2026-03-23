@@ -107,8 +107,7 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                     val newItem = ShoppingItem(
                         name = event.productName,
                         quantity = 1,
-                        unitPrice = event.price.toDouble()
-                            .let { String.format("%.2f", it).toDouble() },
+                        unitPrice = runCatching { event.price.toDouble().let { String.format("%.2f", it).toDouble() } }.getOrElse { 0.0 },
                         isChecked = false
                     )
                     showBottomSheet.value = false
@@ -135,16 +134,13 @@ class HomeViewModel @Inject constructor(private val repository: ShoppingItemRepo
                 }
 
                 ShoppingEvent.ModalDismissed -> showBottomSheet.value = false
-                ShoppingEvent.SnackbarDismissed -> {
-                    snackbarMessageShown()
-                }
+
+                ShoppingEvent.SnackbarDismissed -> snackbarMessageShown()
             }
         }
     }
 
-    private fun snackbarMessageShown() {
-        _userMessage.value = null
-    }
+    private fun snackbarMessageShown() { _userMessage.value = null }
 
     private fun calculateTotalPrice(items: List<ShoppingItem>): Double {
         return items.sumOf { it.quantity * it.unitPrice }
