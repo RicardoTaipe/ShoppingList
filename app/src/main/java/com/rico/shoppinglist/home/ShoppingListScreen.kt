@@ -105,7 +105,7 @@ private fun HandleSnackbarMessages(
 
         LaunchedEffect(messageResId) {
             val result = snackbarHostState.showSnackbar(
-                message = snackbarText, actionLabel = actionLabel, duration = SnackbarDuration.Long
+                message = snackbarText, actionLabel = actionLabel, duration = SnackbarDuration.Short
             )
 
             when (result) {

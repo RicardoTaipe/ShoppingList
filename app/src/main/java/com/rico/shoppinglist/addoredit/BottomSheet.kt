@@ -13,10 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,111 +55,118 @@ fun AddEditBottomSheet(
         onDismissRequest = { onEvent.invoke(ShoppingEvent.ModalDismissed) },
         sheetState = sheetState
     ) {
-        var name by rememberSaveable(selectedProduct.name) {
-            mutableStateOf(
-                selectedProduct.name.ifEmpty { "" }
-            )
-        }
-
-        var unitPrice by rememberSaveable(selectedProduct.unitPrice) {
-            mutableStateOf(
-                if (selectedProduct.unitPrice > 0.00) {
-                    "%.2f".format(selectedProduct.unitPrice)
-                } else {
-                    ""
+        BottomSheetContainer(
+            selectedProduct = selectedProduct,
+            onEvent = onEvent,
+            onDismiss = {
+                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                    if (!sheetState.isVisible) {
+                        onEvent.invoke(ShoppingEvent.ModalDismissed)
+                    }
                 }
+            }
+        )
+    }
+}
+
+@Composable
+fun BottomSheetContainer(
+    modifier: Modifier = Modifier,
+    selectedProduct: ShoppingItem = ShoppingItem.PLACEHOLDER,
+    onEvent: (ShoppingEvent) -> Unit = {},
+    onDismiss: () -> Unit = {}
+) {
+    var name by rememberSaveable(selectedProduct.name) {
+        mutableStateOf(
+            selectedProduct.name.ifEmpty { "" }
+        )
+    }
+
+    var unitPrice by rememberSaveable(selectedProduct.unitPrice) {
+        mutableStateOf(
+            if (selectedProduct.unitPrice > 0.00) {
+                "%.2f".format(selectedProduct.unitPrice)
+            } else {
+                ""
+            }
+        )
+    }
+
+    Column(
+        modifier = modifier.padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            TextField(
+                modifier = Modifier.weight(2f),
+                label = stringResource(R.string.product_name),
+                value = name,
+                onValueChange = { name = it },
+                placeholder = stringResource(R.string.e_g_milk)
+            )
+
+            TextField(
+                modifier = Modifier.weight(1f),
+                isNumber = true,
+                label = stringResource(R.string.price),
+                value = unitPrice,
+                prefix = stringResource(R.string.dollar_sign),
+                onValueChange = { unitPrice = it },
+                placeholder = stringResource(R.string.price_number)
             )
         }
 
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                TextField(
-                    modifier = Modifier.weight(2f),
-                    label = stringResource(R.string.product_name),
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = stringResource(R.string.e_g_milk)
-                )
-
-
-                TextField(
-                    modifier = Modifier.weight(1f),
-                    isNumber = true,
-                    label = stringResource(R.string.price),
-                    value = unitPrice,
-                    prefix = stringResource(R.string.dollar_sign),
-                    onValueChange = { unitPrice = it },
-                    placeholder = stringResource(R.string.price_number)
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                onClick = { onDismiss() },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    stringResource(R.string.cancel),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Button(
+                onClick = {
+                    if (selectedProduct.isExistingProduct()) {
+                        onEvent.invoke(
+                            ShoppingEvent.EditProduct(
+                                newPrice = unitPrice.replace(",", "."),
+                                newName = name,
+                                item = selectedProduct
+                            )
+                        )
+                    } else {
+                        onEvent.invoke(
+                            ShoppingEvent.AddNewItem(
+                                productName = name,
+                                price = unitPrice.replace(",", ".")
+                            )
+                        )
+                    }
+                    onDismiss()
+                },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp)
             ) {
-
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    onClick = { onEvent.invoke(ShoppingEvent.ModalDismissed) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        stringResource(R.string.cancel),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        if (selectedProduct.isExistingProduct()) {
-                            onEvent.invoke(
-                                ShoppingEvent.EditProduct(
-                                    newPrice = unitPrice.replace(",", "."),
-                                    newName = name,
-                                    item = selectedProduct
-                                )
-                            )
-                        } else {
-                            onEvent.invoke(
-                                ShoppingEvent.AddNewItem(
-                                    productName = name,
-                                    price = unitPrice.replace(",", ".")
-                                )
-                            )
-                        }
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                onEvent.invoke(ShoppingEvent.ModalDismissed)
-                            }
-                        }
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(stringResource(R.string.save), fontWeight = FontWeight.Bold)
-                }
+                Text(stringResource(R.string.save), fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @MultiThemePreview
 @Composable
 private fun AddEditBottomSheetPreview() {
-    // use rememberStandardBottomSheetState instead of rememberModalBottomSheetState
-    // for preview
-    val sheetState = rememberStandardBottomSheetState(
-        initialValue = SheetValue.Expanded,
-        skipHiddenState = false
-    )
     ShoppingListTheme {
         val selectedProduct = ShoppingItem(
             id = "1",
@@ -170,6 +175,9 @@ private fun AddEditBottomSheetPreview() {
             unitPrice = 0.95,
             isChecked = false
         )
-        AddEditBottomSheet(sheetState = sheetState, selectedProduct = selectedProduct)
+        BottomSheetContainer(
+            selectedProduct = selectedProduct,
+            onEvent = {}
+        )
     }
 }
